@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Subscribers Management - MOON PUNCH Admin</title>
+  <link rel="stylesheet" href="../../assets/vendors/mdi/css/materialdesignicons.min.css">
+  <link rel="stylesheet" href="../../assets/vendors/css/vendor.bundle.base.css">
+  <link rel="stylesheet" href="../../assets/css/style.css">
+</head>
+<body>
+  <div class="container-scroller">
+    <nav class="sidebar sidebar-offcanvas" id="sidebar">
+      <div class="sidebar-brand-wrapper d-none d-lg-flex align-items-center justify-content-center fixed-top">
+        <a class="sidebar-brand brand-logo" href="../../index.html"><img src="../../assets/images/logo.svg" alt="logo" /></a>
+      </div>
+      <ul class="nav" style="margin-top: 60px;">
+        <li class="nav-item menu-items"><a class="nav-link" href="../../index.html"><span class="menu-icon"><i class="mdi mdi-speedometer"></i></span><span class="menu-title">Dashboard</span></a></li>
+        <li class="nav-item menu-items"><a class="nav-link" href="users.html"><span class="menu-icon"><i class="mdi mdi-account-multiple"></i></span><span class="menu-title">Users</span></a></li>
+        <li class="nav-item menu-items"><a class="nav-link" href="products.html"><span class="menu-icon"><i class="mdi mdi-package-variant"></i></span><span class="menu-title">Products</span></a></li>
+        <li class="nav-item menu-items"><a class="nav-link" href="categories.html"><span class="menu-icon"><i class="mdi mdi-tag-multiple"></i></span><span class="menu-title">Categories</span></a></li>
+        <li class="nav-item menu-items"><a class="nav-link" href="comments.html"><span class="menu-icon"><i class="mdi mdi-comment-multiple"></i></span><span class="menu-title">Comments</span></a></li>
+        <li class="nav-item menu-items"><a class="nav-link" href="licenses.html"><span class="menu-icon"><i class="mdi mdi-license"></i></span><span class="menu-title">Licenses</span></a></li>
+        <li class="nav-item menu-items"><a class="nav-link" href="subscribers.html"><span class="menu-icon"><i class="mdi mdi-email-multiple"></i></span><span class="menu-title">Subscribers</span></a></li>
+      </ul>
+    </nav>
+
+    <div class="container-fluid page-body-wrapper">
+      <nav class="navbar p-0 fixed-top d-flex flex-row">
+        <div class="navbar-menu-wrapper flex-grow d-flex align-items-stretch">
+          <button class="navbar-toggler navbar-toggler align-self-center" type="button" data-toggle="minimize"><span class="mdi mdi-menu"></span></button>
+          <ul class="navbar-nav navbar-nav-right">
+            <li class="nav-item dropdown"><a class="nav-link" id="profileDropdown" href="#" data-toggle="dropdown"><span class="nav-profile-name">Admin</span></a>
+              <div class="dropdown-menu dropdown-menu-right navbar-dropdown"><a class="dropdown-item" href="#" id="logoutBtn"><i class="mdi mdi-logout text-danger"></i> Logout</a></div>
+            </li>
+          </ul>
+        </div>
+      </nav>
+
+      <div class="main-panel">
+        <div class="content-wrapper">
+          <div class="page-header">
+            <h3 class="page-title">Subscribers Management</h3>
+          </div>
+
+          <div id="alertContainer"></div>
+
+          <div class="row">
+            <div class="col-lg-12 grid-margin stretch-card">
+              <div class="card">
+                <div class="card-body">
+                  <div class="row mb-3">
+                    <div class="col-md-4">
+                      <select id="typeFilter" class="form-control">
+                        <option value="">All Types</option>
+                        <option value="beta_tester">Beta Tester</option>
+                        <option value="early_access">Early Access</option>
+                        <option value="newsletter">Newsletter</option>
+                      </select>
+                    </div>
+                    <div class="col-md-4">
+                      <select id="statusFilter" class="form-control">
+                        <option value="">All Status</option>
+                        <option value="true">Active</option>
+                        <option value="false">Inactive</option>
+                      </select>
+                    </div>
+                    <div class="col-md-2">
+                      <button class="btn btn-primary w-100" id="filterBtn">Filter</button>
+                    </div>
+                  </div>
+
+                  <div class="table-responsive">
+                    <table class="table table-striped">
+                      <thead>
+                        <tr>
+                          <th>User</th>
+                          <th>Product</th>
+                          <th>Type</th>
+                          <th>Status</th>
+                          <th>Subscribed</th>
+                          <th>Unsubscribed</th>
+                        </tr>
+                      </thead>
+                      <tbody id="subscribersBody">
+                        <tr><td colspan="6" class="text-center">Loading...</td></tr>
+                      </tbody>
+                    </table>
+                  </div>
+
+                  <div id="paginationContainer"></div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="../../assets/vendors/js/vendor.bundle.base.js"></script>
+  <script src="../../assets/js/off-canvas.js"></script>
+  <script src="../../assets/js/tooltip.js"></script>
+  <script src="../../assets/js/template.js"></script>
+  <script>
+    const Auth = {
+      getToken: () => localStorage.getItem('mp_access_token'),
+      clear: () => localStorage.removeItem('mp_access_token'),
+      isLoggedIn: () => !!Auth.getToken(),
+    };
+  </script>
+  <script src="../../api-admin.js"></script>
+  <script>
+    const currentPage = new URLSearchParams(window.location.search).get('page') || 1;
+
+    async function loadSubscribers() {
+      try {
+        const type = document.getElementById('typeFilter').value;
+        const status = document.getElementById('statusFilter').value;
+        const isActive = status ? (status === 'true') : null;
+        
+        const response = await AdminAPI.getSubscribers(currentPage, 10, type || null, isActive);
+        renderSubscribers(response);
+      } catch (error) {
+        showAlert('Error: ' + error.message, 'danger');
+      }
+    }
+
+    function renderSubscribers(data) {
+      const tbody = document.getElementById('subscribersBody');
+      tbody.innerHTML = '';
+
+      if (!data.data || data.data.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="6" class="text-center">No subscribers found</td></tr>';
+        return;
+      }
+
+      data.data.forEach(sub => {
+        const row = document.createElement('tr');
+        row.innerHTML = `
+          <td>${sub.user.username}</td>
+          <td>${sub.product.projectName}</td>
+          <td><span class="badge badge-info">${sub.subscriptionType}</span></td>
+          <td><span class="badge badge-${sub.isActive ? 'success' : 'warning'}">${sub.isActive ? 'Active' : 'Inactive'}</span></td>
+          <td>${formatDate(sub.subscribedAt)}</td>
+          <td>${sub.unsubscribedAt ? formatDate(sub.unsubscribedAt) : 'N/A'}</td>
+        `;
+        tbody.appendChild(row);
+      });
+
+      document.getElementById('paginationContainer').innerHTML = getPaginationHTML(data.page, data.pages);
+    }
+
+    document.getElementById('filterBtn').addEventListener('click', loadSubscribers);
+    document.getElementById('logoutBtn').addEventListener('click', () => {
+      Auth.clear();
+      window.location.href = '../../index.html';
+    });
+
+    if (!Auth.isLoggedIn()) window.location.href = '../../index.html';
+    loadSubscribers();
+  </script>
+</body>
+</html>

@@ -1,0 +1,202 @@
+// This is your Prisma schema file for MOON PUNCH
+// Run: npx prisma migrate dev --name init
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ─── Enums ────────────────────────────────────────────────────────────────────
+
+enum Role {
+  user
+  moderator
+  admin
+}
+
+enum ProductStatus {
+  draft
+  published
+  archived
+}
+
+enum MediaType {
+  image
+  video
+}
+
+enum SubscriptionType {
+  beta_tester
+  early_access
+  newsletter
+}
+
+enum LicenseType {
+  standard
+  premium
+  enterprise
+}
+
+// ─── Models ───────────────────────────────────────────────────────────────────
+
+model User {
+  id            String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  email         String    @unique @db.VarChar(255)
+  username      String    @unique @db.VarChar(100)
+  passwordHash  String?   @db.VarChar(255) @map("password_hash")
+  role          Role      @default(user)
+  firstName     String?   @db.VarChar(100)  @map("first_name")
+  lastName      String?   @db.VarChar(100)  @map("last_name")
+  phone         String?   @db.VarChar(20)
+  avatarUrl     String?   @map("avatar_url")
+  bio           String?
+  oauthProvider String?   @db.VarChar(50)   @map("oauth_provider")
+  oauthId       String?   @db.VarChar(255)  @map("oauth_id")
+  isVerified    Boolean   @default(false)   @map("is_verified")
+  isActive      Boolean   @default(true)    @map("is_active")
+  lastLoginAt   DateTime? @map("last_login_at")
+  createdAt     DateTime  @default(now())   @map("created_at")
+  updatedAt     DateTime  @updatedAt        @map("updated_at")
+
+  // Relations
+  products      Product[]      @relation("CreatedByUser")
+  comments      Comment[]
+  subscriptions Subscription[]
+  licenses      License[]
+  sessions      Session[]
+
+  @@index([oauthProvider, oauthId])
+  @@map("users")
+}
+
+model Category {
+  id       String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  name     String    @unique @db.VarChar(50)
+  slug     String    @unique @db.VarChar(50)
+  colorHex String?   @db.VarChar(7) @map("color_hex")
+
+  products Product[]
+
+  @@map("categories")
+}
+
+model Product {
+  id                 String        @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  projectName        String        @db.VarChar(255) @map("project_name")
+  slug               String        @unique @db.VarChar(255)
+  projectExplanation String        @map("project_explanation")
+  shortDescription   String?       @db.VarChar(500) @map("short_description")
+  videoUrl           String?       @map("video_url")
+  thumbnailUrl       String?       @map("thumbnail_url")
+  categoryId         String?       @db.Uuid @map("category_id")
+  status             ProductStatus @default(draft)
+  releaseDate        DateTime?     @map("release_date") @db.Date
+  storeUrl           String?       @map("store_url")
+  downloadCount      Int           @default(0) @map("download_count")
+  avgRating          Decimal       @default(0.00) @db.Decimal(3, 2) @map("avg_rating")
+  createdBy          String?       @db.Uuid @map("created_by")
+  createdAt          DateTime      @default(now()) @map("created_at")
+  updatedAt          DateTime      @updatedAt @map("updated_at")
+
+  // Relations
+  category      Category?      @relation(fields: [categoryId], references: [id])
+  creator       User?          @relation("CreatedByUser", fields: [createdBy], references: [id])
+  media         ProductMedia[]
+  comments      Comment[]
+  subscriptions Subscription[]
+  licenses      License[]
+
+  @@index([slug])
+  @@index([categoryId])
+  @@index([status])
+  @@index([releaseDate])
+  @@map("products")
+}
+
+model ProductMedia {
+  id        String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  productId String    @db.Uuid @map("product_id")
+  mediaType MediaType @map("media_type")
+  url       String
+  caption   String?   @db.VarChar(255)
+  sortOrder Int       @default(0) @map("sort_order")
+  createdAt DateTime  @default(now()) @map("created_at")
+
+  product Product @relation(fields: [productId], references: [id], onDelete: Cascade)
+
+  @@map("product_media")
+}
+
+model Comment {
+  id         String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  productId  String   @db.Uuid @map("product_id")
+  userId     String?  @db.Uuid @map("user_id")
+  content    String
+  rating     Int?     // 1-5 star rating
+  isApproved Boolean  @default(false) @map("is_approved")
+  parentId   String?  @db.Uuid @map("parent_id")
+  createdAt  DateTime @default(now()) @map("created_at")
+  updatedAt  DateTime @updatedAt @map("updated_at")
+
+  product  Product   @relation(fields: [productId], references: [id], onDelete: Cascade)
+  user     User?     @relation(fields: [userId], references: [id], onDelete: SetNull)
+  parent   Comment?  @relation("CommentReplies", fields: [parentId], references: [id])
+  replies  Comment[] @relation("CommentReplies")
+
+  @@index([productId])
+  @@index([userId])
+  @@index([isApproved])
+  @@map("comments")
+}
+
+model Subscription {
+  id               String           @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  userId           String           @db.Uuid @map("user_id")
+  productId        String           @db.Uuid @map("product_id")
+  subscriptionType SubscriptionType @map("subscription_type")
+  isActive         Boolean          @default(true) @map("is_active")
+  subscribedAt     DateTime         @default(now()) @map("subscribed_at")
+  unsubscribedAt   DateTime?        @map("unsubscribed_at")
+
+  user    User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  product Product @relation(fields: [productId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, productId, subscriptionType])
+  @@map("subscribers")
+}
+
+model License {
+  id          String      @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  userId      String      @db.Uuid @map("user_id")
+  productId   String      @db.Uuid @map("product_id")
+  licenseKey  String      @unique @db.VarChar(255) @map("license_key")
+  licenseType LicenseType @default(standard) @map("license_type")
+  isActive    Boolean     @default(true) @map("is_active")
+  activatedAt DateTime?   @map("activated_at")
+  expiresAt   DateTime?   @map("expires_at") // null = lifetime
+  createdAt   DateTime    @default(now()) @map("created_at")
+
+  user    User    @relation(fields: [userId], references: [id])
+  product Product @relation(fields: [productId], references: [id])
+
+  @@map("licenses")
+}
+
+model Session {
+  id           String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  userId       String   @db.Uuid @map("user_id")
+  refreshToken String   @map("refresh_token") // stored hashed
+  ipAddress    String?  @db.VarChar(45) @map("ip_address")
+  userAgent    String?  @map("user_agent")
+  expiresAt    DateTime @map("expires_at")
+  createdAt    DateTime @default(now()) @map("created_at")
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@map("sessions")
+}

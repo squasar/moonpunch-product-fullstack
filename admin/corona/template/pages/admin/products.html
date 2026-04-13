@@ -1,0 +1,305 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Products Management - MOON PUNCH Admin</title>
+  <link rel="stylesheet" href="../../assets/vendors/mdi/css/materialdesignicons.min.css">
+  <link rel="stylesheet" href="../../assets/vendors/css/vendor.bundle.base.css">
+  <link rel="stylesheet" href="../../assets/css/style.css">
+  <link rel="shortcut icon" href="../../assets/images/favicon.png" />
+  <style>
+    .action-buttons { display: flex; gap: 5px; flex-wrap: wrap; }
+    .action-buttons button { padding: 5px 10px; font-size: 12px; }
+    .status-badge { display: inline-block; padding: 3px 8px; border-radius: 3px; font-size: 12px; }
+  </style>
+</head>
+<body>
+  <div class="container-scroller">
+    <nav class="sidebar sidebar-offcanvas" id="sidebar">
+      <div class="sidebar-brand-wrapper d-none d-lg-flex align-items-center justify-content-center fixed-top">
+        <a class="sidebar-brand brand-logo" href="../../index.html"><img src="../../assets/images/logo.svg" alt="logo" /></a>
+      </div>
+      <ul class="nav" style="margin-top: 60px;">
+        <li class="nav-item menu-items"><a class="nav-link" href="../../index.html"><span class="menu-icon"><i class="mdi mdi-speedometer"></i></span><span class="menu-title">Dashboard</span></a></li>
+        <li class="nav-item menu-items"><a class="nav-link" href="users.html"><span class="menu-icon"><i class="mdi mdi-account-multiple"></i></span><span class="menu-title">Users</span></a></li>
+        <li class="nav-item menu-items"><a class="nav-link" href="products.html"><span class="menu-icon"><i class="mdi mdi-package-variant"></i></span><span class="menu-title">Products</span></a></li>
+        <li class="nav-item menu-items"><a class="nav-link" href="categories.html"><span class="menu-icon"><i class="mdi mdi-tag-multiple"></i></span><span class="menu-title">Categories</span></a></li>
+        <li class="nav-item menu-items"><a class="nav-link" href="comments.html"><span class="menu-icon"><i class="mdi mdi-comment-multiple"></i></span><span class="menu-title">Comments</span></a></li>
+        <li class="nav-item menu-items"><a class="nav-link" href="licenses.html"><span class="menu-icon"><i class="mdi mdi-license"></i></span><span class="menu-title">Licenses</span></a></li>
+        <li class="nav-item menu-items"><a class="nav-link" href="subscribers.html"><span class="menu-icon"><i class="mdi mdi-email-multiple"></i></span><span class="menu-title">Subscribers</span></a></li>
+      </ul>
+    </nav>
+
+    <div class="container-fluid page-body-wrapper">
+      <nav class="navbar p-0 fixed-top d-flex flex-row">
+        <div class="navbar-menu-wrapper flex-grow d-flex align-items-stretch">
+          <button class="navbar-toggler navbar-toggler align-self-center" type="button" data-toggle="minimize"><span class="mdi mdi-menu"></span></button>
+          <ul class="navbar-nav navbar-nav-right">
+            <li class="nav-item dropdown"><a class="nav-link" id="profileDropdown" href="#" data-toggle="dropdown"><span class="nav-profile-name">Admin</span></a>
+              <div class="dropdown-menu dropdown-menu-right navbar-dropdown"><a class="dropdown-item" href="#" id="logoutBtn"><i class="mdi mdi-logout text-danger"></i> Logout</a></div>
+            </li>
+          </ul>
+        </div>
+      </nav>
+
+      <div class="main-panel">
+        <div class="content-wrapper">
+          <div class="page-header">
+            <h3 class="page-title">Products Management</h3>
+            <nav aria-label="breadcrumb">
+              <ol class="breadcrumb">
+                <li class="breadcrumb-item"><a href="../../index.html">Dashboard</a></li>
+                <li class="breadcrumb-item active" aria-current="page">Products</li>
+              </ol>
+            </nav>
+          </div>
+
+          <div id="alertContainer"></div>
+
+          <div class="row">
+            <div class="col-lg-12 grid-margin stretch-card">
+              <div class="card">
+                <div class="card-body">
+                  <div class="row mb-3">
+                    <div class="col-md-12">
+                      <button class="btn btn-success" id="createProductBtn" data-toggle="modal" data-target="#productModal">+ Create Product</button>
+                    </div>
+                  </div>
+
+                  <div class="row mb-3">
+                    <div class="col-md-4">
+                      <input type="text" id="searchInput" class="form-control" placeholder="Search products...">
+                    </div>
+                    <div class="col-md-3">
+                      <select id="statusFilter" class="form-control">
+                        <option value="">All Status</option>
+                        <option value="draft">Draft</option>
+                        <option value="published">Published</option>
+                        <option value="archived">Archived</option>
+                      </select>
+                    </div>
+                    <div class="col-md-2">
+                      <button class="btn btn-primary w-100" id="searchBtn">Search</button>
+                    </div>
+                  </div>
+
+                  <div class="table-responsive">
+                    <table class="table table-striped" id="productsTable">
+                      <thead>
+                        <tr>
+                          <th>Project Name</th>
+                          <th>Category</th>
+                          <th>Status</th>
+                          <th>Downloads</th>
+                          <th>Rating</th>
+                          <th>Created</th>
+                          <th>Actions</th>
+                        </tr>
+                      </thead>
+                      <tbody id="productsTableBody">
+                        <tr><td colspan="7" class="text-center">Loading...</td></tr>
+                      </tbody>
+                    </table>
+                  </div>
+
+                  <div id="paginationContainer"></div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Product Modal -->
+  <div class="modal fade" id="productModal" tabindex="-1" role="dialog">
+    <div class="modal-dialog modal-lg" role="document">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="modalTitle">Create Product</h5>
+          <button type="button" class="close" data-dismiss="modal"><span>&times;</span></button>
+        </div>
+        <div class="modal-body">
+          <form id="productForm">
+            <div class="form-group">
+              <label>Project Name</label>
+              <input type="text" id="projectName" class="form-control" required>
+            </div>
+            <div class="form-group">
+              <label>Slug</label>
+              <input type="text" id="slug" class="form-control">
+            </div>
+            <div class="form-group">
+              <label>Description</label>
+              <textarea id="projectExplanation" class="form-control" rows="3" required></textarea>
+            </div>
+            <div class="form-group">
+              <label>Short Description</label>
+              <input type="text" id="shortDescription" class="form-control">
+            </div>
+            <div class="form-group">
+              <label>Category</label>
+              <select id="categoryId" class="form-control"></select>
+            </div>
+            <div class="form-group">
+              <label>Thumbnail URL</label>
+              <input type="text" id="thumbnailUrl" class="form-control">
+            </div>
+            <div class="form-group">
+              <label>Video URL</label>
+              <input type="text" id="videoUrl" class="form-control">
+            </div>
+            <div class="form-group">
+              <label>Store URL</label>
+              <input type="text" id="storeUrl" class="form-control">
+            </div>
+          </form>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+          <button type="button" class="btn btn-primary" id="saveProductBtn">Save Product</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="../../assets/vendors/js/vendor.bundle.base.js"></script>
+  <script src="../../assets/js/off-canvas.js"></script>
+  <script src="../../assets/js/tooltip.js"></script>
+  <script src="../../assets/js/template.js"></script>
+  <script>
+    const Auth = {
+      getToken: () => localStorage.getItem('mp_access_token'),
+      setToken: (t) => localStorage.setItem('mp_access_token', t),
+      clear: () => localStorage.removeItem('mp_access_token'),
+      isLoggedIn: () => !!Auth.getToken(),
+    };
+  </script>
+  <script src="../../api-admin.js"></script>
+  <script>
+    const currentPage = new URLSearchParams(window.location.search).get('page') || 1;
+    const pageSize = 10;
+
+    async function loadProducts() {
+      try {
+        const search = document.getElementById('searchInput').value;
+        const status = document.getElementById('statusFilter').value;
+        const response = await AdminAPI.getProducts(currentPage, pageSize, status || null, null, search || null);
+        renderProducts(response);
+      } catch (error) {
+        showAlert('Error loading products: ' + error.message, 'danger');
+      }
+    }
+
+    function renderProducts(data) {
+      const tbody = document.getElementById('productsTableBody');
+      tbody.innerHTML = '';
+
+      if (!data.data || data.data.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="7" class="text-center">No products found</td></tr>';
+        return;
+      }
+
+      data.data.forEach(product => {
+        const row = document.createElement('tr');
+        row.innerHTML = `
+          <td>${product.projectName}</td>
+          <td>${product.category ? product.category.name : 'N/A'}</td>
+          <td><span class="badge badge-${product.status === 'published' ? 'success' : 'warning'}">${product.status}</span></td>
+          <td>${product.downloadCount || 0}</td>
+          <td>${product.avgRating || 'N/A'}</td>
+          <td>${formatDate(product.createdAt)}</td>
+          <td>
+            <div class="action-buttons">
+              <button class="btn btn-sm btn-info" onclick="editProduct('${product.id}')">Edit</button>
+              <button class="btn btn-sm btn-warning" onclick="togglePublish('${product.id}', '${product.status}')">
+                ${product.status === 'published' ? 'Draft' : 'Publish'}
+              </button>
+              <button class="btn btn-sm btn-danger" onclick="deleteProduct('${product.id}')">Delete</button>
+            </div>
+          </td>
+        `;
+        tbody.appendChild(row);
+      });
+
+      const pagination = document.getElementById('paginationContainer');
+      pagination.innerHTML = getPaginationHTML(data.page, data.pages);
+    }
+
+    async function loadCategories() {
+      try {
+        const categories = await AdminAPI.getCategories();
+        const select = document.getElementById('categoryId');
+        select.innerHTML = '<option value="">Select Category</option>';
+        categories.forEach(cat => {
+          select.innerHTML += `<option value="${cat.id}">${cat.name}</option>`;
+        });
+      } catch (error) {
+        showAlert('Error loading categories', 'danger');
+      }
+    }
+
+    async function saveProduct() {
+      const form = document.getElementById('productForm');
+      const data = {
+        projectName: document.getElementById('projectName').value,
+        slug: document.getElementById('slug').value,
+        projectExplanation: document.getElementById('projectExplanation').value,
+        shortDescription: document.getElementById('shortDescription').value,
+        categoryId: document.getElementById('categoryId').value,
+        thumbnailUrl: document.getElementById('thumbnailUrl').value,
+        videoUrl: document.getElementById('videoUrl').value,
+        storeUrl: document.getElementById('storeUrl').value,
+      };
+
+      try {
+        await AdminAPI.createProduct(data);
+        showAlert('Product created successfully', 'success');
+        $('#productModal').modal('hide');
+        form.reset();
+        loadProducts();
+      } catch (error) {
+        showAlert('Error: ' + error.message, 'danger');
+      }
+    }
+
+    async function togglePublish(productId, currentStatus) {
+      const newStatus = currentStatus === 'published' ? 'draft' : 'published';
+      try {
+        await AdminAPI.publishProduct(productId, newStatus);
+        showAlert(`Product ${newStatus}`, 'success');
+        loadProducts();
+      } catch (error) {
+        showAlert('Error: ' + error.message, 'danger');
+      }
+    }
+
+    async function deleteProduct(productId) {
+      if (!confirm('Are you sure?')) return;
+      try {
+        await AdminAPI.deleteProduct(productId);
+        showAlert('Product deleted', 'success');
+        loadProducts();
+      } catch (error) {
+        showAlert('Error: ' + error.message, 'danger');
+      }
+    }
+
+    document.getElementById('searchBtn').addEventListener('click', loadProducts);
+    document.getElementById('saveProductBtn').addEventListener('click', saveProduct);
+    document.getElementById('logoutBtn').addEventListener('click', () => {
+      Auth.clear();
+      window.location.href = '../../index.html';
+    });
+
+    if (!Auth.isLoggedIn()) {
+      window.location.href = '../../index.html';
+    }
+
+    loadCategories();
+    loadProducts();
+  </script>
+</body>
+</html>

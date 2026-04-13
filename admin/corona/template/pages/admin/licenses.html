@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Licenses Management - MOON PUNCH Admin</title>
+  <link rel="stylesheet" href="../../assets/vendors/mdi/css/materialdesignicons.min.css">
+  <link rel="stylesheet" href="../../assets/vendors/css/vendor.bundle.base.css">
+  <link rel="stylesheet" href="../../assets/css/style.css">
+</head>
+<body>
+  <div class="container-scroller">
+    <nav class="sidebar sidebar-offcanvas" id="sidebar">
+      <div class="sidebar-brand-wrapper d-none d-lg-flex align-items-center justify-content-center fixed-top">
+        <a class="sidebar-brand brand-logo" href="../../index.html"><img src="../../assets/images/logo.svg" alt="logo" /></a>
+      </div>
+      <ul class="nav" style="margin-top: 60px;">
+        <li class="nav-item menu-items"><a class="nav-link" href="../../index.html"><span class="menu-icon"><i class="mdi mdi-speedometer"></i></span><span class="menu-title">Dashboard</span></a></li>
+        <li class="nav-item menu-items"><a class="nav-link" href="users.html"><span class="menu-icon"><i class="mdi mdi-account-multiple"></i></span><span class="menu-title">Users</span></a></li>
+        <li class="nav-item menu-items"><a class="nav-link" href="products.html"><span class="menu-icon"><i class="mdi mdi-package-variant"></i></span><span class="menu-title">Products</span></a></li>
+        <li class="nav-item menu-items"><a class="nav-link" href="categories.html"><span class="menu-icon"><i class="mdi mdi-tag-multiple"></i></span><span class="menu-title">Categories</span></a></li>
+        <li class="nav-item menu-items"><a class="nav-link" href="comments.html"><span class="menu-icon"><i class="mdi mdi-comment-multiple"></i></span><span class="menu-title">Comments</span></a></li>
+        <li class="nav-item menu-items"><a class="nav-link" href="licenses.html"><span class="menu-icon"><i class="mdi mdi-license"></i></span><span class="menu-title">Licenses</span></a></li>
+        <li class="nav-item menu-items"><a class="nav-link" href="subscribers.html"><span class="menu-icon"><i class="mdi mdi-email-multiple"></i></span><span class="menu-title">Subscribers</span></a></li>
+      </ul>
+    </nav>
+
+    <div class="container-fluid page-body-wrapper">
+      <nav class="navbar p-0 fixed-top d-flex flex-row">
+        <div class="navbar-menu-wrapper flex-grow d-flex align-items-stretch">
+          <button class="navbar-toggler navbar-toggler align-self-center" type="button" data-toggle="minimize"><span class="mdi mdi-menu"></span></button>
+          <ul class="navbar-nav navbar-nav-right">
+            <li class="nav-item dropdown"><a class="nav-link" id="profileDropdown" href="#" data-toggle="dropdown"><span class="nav-profile-name">Admin</span></a>
+              <div class="dropdown-menu dropdown-menu-right navbar-dropdown"><a class="dropdown-item" href="#" id="logoutBtn"><i class="mdi mdi-logout text-danger"></i> Logout</a></div>
+            </li>
+          </ul>
+        </div>
+      </nav>
+
+      <div class="main-panel">
+        <div class="content-wrapper">
+          <div class="page-header">
+            <h3 class="page-title">Licenses Management</h3>
+          </div>
+
+          <div id="alertContainer"></div>
+
+          <div class="row">
+            <div class="col-lg-12 grid-margin stretch-card">
+              <div class="card">
+                <div class="card-body">
+                  <div class="table-responsive">
+                    <table class="table table-striped">
+                      <thead>
+                        <tr>
+                          <th>User</th>
+                          <th>Product</th>
+                          <th>License Key</th>
+                          <th>Type</th>
+                          <th>Status</th>
+                          <th>Activated</th>
+                          <th>Actions</th>
+                        </tr>
+                      </thead>
+                      <tbody id="licensesBody">
+                        <tr><td colspan="7" class="text-center">Loading...</td></tr>
+                      </tbody>
+                    </table>
+                  </div>
+
+                  <div id="paginationContainer"></div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="../../assets/vendors/js/vendor.bundle.base.js"></script>
+  <script src="../../assets/js/off-canvas.js"></script>
+  <script src="../../assets/js/tooltip.js"></script>
+  <script src="../../assets/js/template.js"></script>
+  <script>
+    const Auth = {
+      getToken: () => localStorage.getItem('mp_access_token'),
+      clear: () => localStorage.removeItem('mp_access_token'),
+      isLoggedIn: () => !!Auth.getToken(),
+    };
+  </script>
+  <script src="../../api-admin.js"></script>
+  <script>
+    const currentPage = new URLSearchParams(window.location.search).get('page') || 1;
+
+    async function loadLicenses() {
+      try {
+        const response = await AdminAPI.getLicenses(currentPage, 10);
+        renderLicenses(response);
+      } catch (error) {
+        showAlert('Error: ' + error.message, 'danger');
+      }
+    }
+
+    function renderLicenses(data) {
+      const tbody = document.getElementById('licensesBody');
+      tbody.innerHTML = '';
+
+      if (!data.data || data.data.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="7" class="text-center">No licenses found</td></tr>';
+        return;
+      }
+
+      data.data.forEach(license => {
+        const row = document.createElement('tr');
+        row.innerHTML = `
+          <td>${license.user.username}</td>
+          <td>${license.product.projectName}</td>
+          <td><small>${license.licenseKey}</small></td>
+          <td><span class="badge badge-info">${license.licenseType}</span></td>
+          <td><span class="badge badge-${license.isActive ? 'success' : 'danger'}">${license.isActive ? 'Active' : 'Revoked'}</span></td>
+          <td>${license.activatedAt ? formatDate(license.activatedAt) : 'Not Activated'}</td>
+          <td>
+            ${license.isActive ? `<button class="btn btn-sm btn-danger" onclick="revokeLicense('${license.id}')">Revoke</button>` : ''}
+          </td>
+        `;
+        tbody.appendChild(row);
+      });
+
+      document.getElementById('paginationContainer').innerHTML = getPaginationHTML(data.page, data.pages);
+    }
+
+    async function revokeLicense(id) {
+      if (!confirm('Revoke this license?')) return;
+      try {
+        await AdminAPI.revokeLicense(id);
+        showAlert('License revoked', 'success');
+        loadLicenses();
+      } catch (error) {
+        showAlert('Error: ' + error.message, 'danger');
+      }
+    }
+
+    document.getElementById('logoutBtn').addEventListener('click', () => {
+      Auth.clear();
+      window.location.href = '../../index.html';
+    });
+
+    if (!Auth.isLoggedIn()) window.location.href = '../../index.html';
+    loadLicenses();
+  </script>
+</body>
+</html>

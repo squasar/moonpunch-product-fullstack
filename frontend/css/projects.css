@@ -1,0 +1,271 @@
+/* Projects Page Custom Styles */
+
+body.projects-page {
+  background-color: #1a1e22;
+  color: #f8f9fa;
+  font-family: 'Roboto Slab', serif;
+}
+
+h1, h2, h3, h4, h5, h6, .navbar-brand {
+  font-family: 'Montserrat', sans-serif;
+}
+
+/* Compact Hero */
+.projects-hero {
+  padding-top: 10.5rem;
+  padding-bottom: 4rem;
+  background-image: linear-gradient(rgba(17, 20, 23, 0.8), rgba(17, 20, 23, 0.9)), url("../assets/img/header-bg-2.png");
+  background-size: cover;
+  background-position: center;
+  color: white;
+  text-align: center;
+}
+
+.projects-hero h1 {
+  font-size: 3.5rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  margin-bottom: 1rem;
+}
+
+/* Projects Grid Section */
+.projects-section {
+  padding: 5rem 0;
+  background-color: #212529;
+}
+
+/* Filter Buttons */
+.portfolio-filters {
+  padding: 0;
+  margin: 0 auto 3rem auto;
+  list-style: none;
+  text-align: center;
+  display: flex;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.portfolio-filters li {
+  cursor: pointer;
+  display: inline-block;
+  padding: 8px 20px 10px 20px;
+  font-size: 15px;
+  font-weight: 600;
+  line-height: 1;
+  color: #ced4da;
+  background: rgba(255, 255, 255, 0.05);
+  margin-bottom: 5px;
+  border-radius: 50px;
+  transition: all 0.3s ease-in-out;
+  font-family: 'Montserrat', sans-serif;
+  text-transform: uppercase;
+}
+
+.portfolio-filters li:hover, .portfolio-filters li.filter-active {
+  color: #fff;
+  background: #ff4500;
+}
+
+/* Project Cards */
+.portfolio-item {
+  margin-bottom: 30px;
+}
+
+.portfolio-wrap {
+  background: #111417;
+  border-radius: 12px;
+  overflow: hidden;
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  transition: all 0.3s ease-in-out;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+}
+
+.portfolio-wrap:hover {
+  transform: translateY(-10px);
+  box-shadow: 0 15px 30px rgba(0, 0, 0, 0.5);
+  border-color: rgba(255, 69, 0, 0.4);
+}
+
+.portfolio-img {
+  position: relative;
+  overflow: hidden;
+}
+
+.portfolio-img img {
+  width: 100%;
+  height: 250px;
+  object-fit: cover;
+  transition: transform 0.5s ease;
+}
+
+.portfolio-wrap:hover .portfolio-img img {
+  transform: scale(1.1);
+}
+
+.portfolio-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(17, 20, 23, 0.7);
+  opacity: 0;
+  transition: opacity 0.3s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.portfolio-wrap:hover .portfolio-overlay {
+  opacity: 1;
+}
+
+.portfolio-overlay .btn {
+  transform: translateY(20px);
+  transition: transform 0.3s ease;
+}
+
+.portfolio-wrap:hover .portfolio-overlay .btn {
+  transform: translateY(0);
+}
+
+.portfolio-info {
+  padding: 25px;
+  flex-grow: 1;
+  display: flex;
+  flex-direction: column;
+}
+
+.badge-game { background-color: #ff4500; }
+.badge-software { background-color: #0d6efd; }
+.badge-tool { background-color: #198754; }
+
+.portfolio-info h4 {
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: #fff;
+  margin-top: 10px;
+  margin-bottom: 10px;
+}
+
+.portfolio-info p {
+  color: #adb5bd;
+  font-size: 0.9rem;
+  margin-bottom: 0;
+  flex-grow: 1;
+}
+
+/* Featured Section */
+.featured-section {
+  padding: 6rem 0;
+  background-color: #111417;
+}
+
+.featured-content {
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 69, 0, 0.2);
+  border-radius: 20px;
+  padding: 3rem;
+}
+
+.featured-image img {
+  border-radius: 12px;
+  box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+  width: 100%;
+}
+
+.featured-text h2 {
+  font-size: 2.5rem;
+  font-weight: 700;
+  color: white;
+  margin-bottom: 1rem;
+}
+
+.featured-text p {
+  color: #ced4da;
+  font-size: 1.1rem;
+  margin-bottom: 2rem;
+}
+
+.featured-stats {
+  display: flex;
+  gap: 2rem;
+  margin-bottom: 2rem;
+}
+
+.f-stat h4 {
+  color: #ff4500;
+  font-size: 1.5rem;
+  font-weight: 700;
+  margin-bottom: 0;
+}
+
+.f-stat span {
+  color: #6c757d;
+  font-size: 0.85rem;
+  text-transform: uppercase;
+}
+
+/* Modals Custom Styles for Dark Theme */
+.portfolio-modal .modal-content {
+  background-color: #212529;
+  color: white;
+}
+
+.portfolio-modal .close-modal img {
+  filter: invert(1);
+}
+
+.portfolio-modal .modal-body {
+  padding: 3rem 0;
+}
+
+.portfolio-modal h2 {
+  color: white;
+}
+
+.portfolio-modal p.item-intro {
+  color: #adb5bd !important;
+}
+
+.portfolio-modal ul {
+  color: #ced4da;
+}
+
+.portfolio-modal img.img-fluid {
+  border-radius: 12px;
+  box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+  margin-bottom: 2rem;
+}
+
+/* Base utilities from brand */
+.text-brand { color: #ff4500 !important; }
+
+.btn-brand {
+  background-color: #ff4500;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  font-weight: 700;
+  text-transform: uppercase;
+  padding: 1rem 2rem;
+  transition: all 0.3s;
+}
+
+.btn-brand:hover {
+  background-color: #e03e00;
+  color: white;
+  transform: translateY(-2px);
+}
+
+@media (max-width: 991px) {
+  .featured-content {
+    padding: 2rem;
+  }
+  .featured-image {
+    margin-bottom: 2rem;
+  }
+}
